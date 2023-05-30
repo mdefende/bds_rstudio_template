@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+module reset
+
+module load Singularity/3.5.2-GCC-5.4.0-2.26
+
+# Additional environment which could be moved into a module
+# Change these to suit
+export RSTUDIO_SERVER_IMAGE="/scratch/mdefende/HPC_container_session/rstudio_ggplot2_3.6.3.sif"
+export SINGULARITYENV_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
+export SINGULARITY_BINDPATHS="/data,/scratch"
+
+
+# PAM auth helper used by RStudio
+export RSTUDIO_AUTH="${PWD}/bin/auth"
+
+# Set working directory to home directory
+cd "${HOME}"
+
+# Launch the RStudio Server
+echo "Starting up rserver..."
+set -x
+
+singularity exec -B "${SINGULARITY_BINDPATHS}" "${RSTUDIO_SERVER_IMAGE}" rserver \
+    --auth-none 1 \
+    --auth-pam-helper-path "${RSTUDIO_AUTH}" \
+    --www-port $port \
+    --server-user $(whoami)
